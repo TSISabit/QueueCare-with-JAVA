@@ -6,6 +6,10 @@ import java.util.List;
 
 public class FileManager {
     public static void writeToFile(String fileName, String data) {
+        writeToFile(fileName, data, true);
+    }
+
+    public static void writeToFile(String fileName, String data, boolean append) {
         try {
             File file = new File(fileName);
 
@@ -15,8 +19,10 @@ public class FileManager {
                 parent.mkdirs();
             }
 
-            FileWriter writer = new FileWriter(file, true);
+            FileWriter writer = new FileWriter(file, append);
+
             writer.write(data);
+
             writer.close();
 
         } catch (IOException e) {
@@ -35,7 +41,6 @@ public class FileManager {
             }
 
             BufferedReader reader = new BufferedReader(new FileReader(file));
-
             String line;
 
             while ((line = reader.readLine()) != null) {
