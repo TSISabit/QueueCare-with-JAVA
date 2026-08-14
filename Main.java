@@ -1,86 +1,144 @@
 import model.Doctor;
 import service.DoctorService;
 
-import java.util.List;
-
 public class Main {
 
     public static void main(String[] args) {
 
-        DoctorService doctorService = new DoctorService();
+        DoctorService doctorService =
+                new DoctorService();
 
-        // Add doctors
-        Doctor doctor1 = new Doctor(
-                "D001",
-                "Dr. Rahman",
-                "rahman@queuecare.com",
+
+        // =================================
+        // ADD DOCTOR
+        // =================================
+
+        Doctor doctor = new Doctor(
+                "D003",
+                "Dr. Ahmed",
+                "ahmed@queuecare.com",
                 "1234",
-                "01700000001",
-                "Cardiologist",
-                1000
+                "01700000003",
+                "Neurologist",
+                1200
         );
 
-        Doctor doctor2 = new Doctor(
-                "D002",
-                "Dr. Karim",
-                "karim@queuecare.com",
-                "1234",
-                "01700000002",
-                "Dermatologist",
-                800
-        );
+        boolean added =
+                doctorService.addDoctor(doctor);
 
-        doctorService.addDoctor(doctor1);
-        doctorService.addDoctor(doctor2);
-
-
-        // Display all doctors
-        System.out.println("===== ALL DOCTORS =====");
-
-        List<Doctor> doctors = doctorService.getAllDoctors();
-
-        for (Doctor doctor : doctors) {
-
+        if (added) {
             System.out.println(
-                    doctor.getId() + " | " +
-                    doctor.getName() + " | " +
-                    doctor.getSpecialization() + " | " +
-                    doctor.getConsultationFee()
+                    "Doctor added successfully."
             );
-        }
-
-
-        // Search doctor
-        System.out.println("\n===== SEARCH DOCTOR =====");
-
-        Doctor foundDoctor =
-                doctorService.findDoctorById("D002");
-
-        if (foundDoctor != null) {
-
-            System.out.println(
-                    "Doctor Found: " +
-                    foundDoctor.getName()
-            );
-
         } else {
-
-            System.out.println("Doctor not found.");
+            System.out.println(
+                    "Doctor ID already exists."
+            );
         }
 
 
-        // Search by specialization
-        System.out.println("\n===== CARDIOLOGISTS =====");
+        // =================================
+        // SHOW ALL DOCTORS
+        // =================================
 
-        List<Doctor> cardiologists =
-                doctorService.findBySpecialization("Cardiologist");
+        System.out.println(
+                "\n===== ALL DOCTORS ====="
+        );
 
-        for (Doctor doctor : cardiologists) {
+        for (Doctor d :
+                doctorService.getAllDoctors()) {
 
             System.out.println(
-                    doctor.getName() +
-                    " - " +
-                    doctor.getSpecialization()
+                    d.getId() + " | " +
+                    d.getName() + " | " +
+                    d.getSpecialization() + " | " +
+                    d.getConsultationFee()
+            );
+        }
+
+
+        // =================================
+        // UPDATE DOCTOR
+        // =================================
+
+        boolean updated =
+                doctorService.updateDoctor(
+                        "D003",
+                        "Dr. Ahmed Khan",
+                        "ahmedkhan@queuecare.com",
+                        "01711111111",
+                        "Neurosurgeon",
+                        1500
+                );
+
+        System.out.println(
+                "\nUpdate Result: " + updated
+        );
+
+
+        // =================================
+        // SHOW UPDATED DOCTOR
+        // =================================
+
+        Doctor updatedDoctor =
+                doctorService.findDoctorById("D003");
+
+        if (updatedDoctor != null) {
+
+            System.out.println(
+                    "\n===== UPDATED DOCTOR ====="
+            );
+
+            System.out.println(
+                    "Name: "
+                    + updatedDoctor.getName()
+            );
+
+            System.out.println(
+                    "Email: "
+                    + updatedDoctor.getEmail()
+            );
+
+            System.out.println(
+                    "Phone: "
+                    + updatedDoctor.getPhone()
+            );
+
+            System.out.println(
+                    "Specialization: "
+                    + updatedDoctor.getSpecialization()
+            );
+
+            System.out.println(
+                    "Fee: "
+                    + updatedDoctor.getConsultationFee()
+            );
+        }
+
+
+        // =================================
+        // DELETE DOCTOR
+        // =================================
+
+        boolean deleted =
+                doctorService.deleteDoctor("D003");
+
+        System.out.println(
+                "\nDelete Result: " + deleted
+        );
+
+
+        // =================================
+        // CHECK AGAIN
+        // =================================
+
+        Doctor deletedDoctor =
+                doctorService.findDoctorById("D003");
+
+        if (deletedDoctor == null) {
+
+            System.out.println(
+                    "Doctor D003 no longer exists."
             );
         }
     }
