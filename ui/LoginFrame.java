@@ -13,7 +13,6 @@ public class LoginFrame extends JFrame {
 
     private UserService userService;
 
-
     public LoginFrame() {
 
         userService = new UserService();
@@ -33,7 +32,6 @@ public class LoginFrame extends JFrame {
         setVisible(true);
     }
 
-
     private void createUI() {
         // Main panel
         JPanel mainPanel = new JPanel();
@@ -41,7 +39,7 @@ public class LoginFrame extends JFrame {
         mainPanel.setLayout(new BorderLayout());
 
         mainPanel.setBorder(BorderFactory.createEmptyBorder(
-                        25, 35, 25, 35));
+                25, 35, 25, 35));
 
         // TITLE
 
@@ -58,7 +56,6 @@ public class LoginFrame extends JFrame {
         titlePanel.add(titleLabel);
         titlePanel.add(subtitleLabel);
 
-
         mainPanel.add(titlePanel, BorderLayout.NORTH);
 
         // FORM
@@ -72,7 +69,6 @@ public class LoginFrame extends JFrame {
         JLabel passwordLabel = new JLabel("Password:");
 
         passwordField = new JPasswordField();
-
 
         formPanel.add(emailLabel);
         formPanel.add(emailField);
@@ -109,22 +105,46 @@ public class LoginFrame extends JFrame {
         // Empty field validation
         if (email.isEmpty() || password.isEmpty()) {
 
-            JOptionPane.showMessageDialog(this, "Please enter email and password.", "Login Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Please enter email and password.",
+                    "Login Error",
+                    JOptionPane.ERROR_MESSAGE);
+
             return;
         }
 
         // Authenticate user
         User user = userService.login(email, password);
 
-        if (user != null) {
+        if (user == null) {
 
-            JOptionPane.showMessageDialog(this, "Welcome, " + user.getName() + "!");
+            JOptionPane.showMessageDialog(this,
+                    "Invalid email or password.",
+                    "Login Failed",
+                    JOptionPane.ERROR_MESSAGE);
 
-            System.out.println("Logged in as: " + user.getRole());
+            return;
+        }
+
+        // LOGIN SUCCESSFUL
+
+        JOptionPane.showMessageDialog(this, "Welcome, " + user.getName() + "!");
+
+        // Hide login window
+        dispose();
+
+        // ROLE BASED REDIRECTION
+
+        if (user.getRole().equalsIgnoreCase("ADMIN")) {
+
+            new AdminDashboard(user);
 
         } else {
 
-            JOptionPane.showMessageDialog(this, "Invalid email or password.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Dashboard for " + user.getRole()
+                            + " is not available yet.");
+
+            new LoginFrame();
         }
     }
 }
