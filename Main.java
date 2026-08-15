@@ -1,205 +1,86 @@
-import model.Appointment;
-import service.AppointmentService;
-import service.DoctorService;
-import service.PatientService;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
+import model.User;
+import service.UserService;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        DoctorService doctorService =
-                new DoctorService();
+        UserService userService = new UserService();
 
-        PatientService patientService =
-                new PatientService();
+        // REGISTER ADMIN
 
-        AppointmentService appointmentService =
-                new AppointmentService();
+        User admin = new User("U001",
+                        "QueueCare Admin",
+                        "admin@queuecare.com",
+                        "admin123",
+                        "ADMIN"
+                );
 
-        // MAKE SURE DOCTOR EXISTS
+        if (userService.registerUser(admin)) {
 
-        if (doctorService.findDoctorById("D001")
-                == null) {
+            System.out.println("Admin registered successfully.");
 
-            doctorService.addDoctor(
-                    new model.Doctor(
-                            "D001",
-                            "Dr. Rahman",
-                            "rahman@queuecare.com",
-                            "1234",
-                            "01700000001",
-                            "Cardiologist",
-                            1000
-                    )
-            );
+        } else {
+
+            System.out.println("Admin already exists.");
         }
 
-        // MAKE SURE PATIENT EXISTS
+        // REGISTER PATIENT
 
-        if (patientService.findPatientById("P001")
-                == null) {
-
-            patientService.addPatient(
-                    new model.Patient(
-                            "P001",
-                            "Sabit",
-                            "sabit@gmail.com",
-                            "1234",
-                            22,
-                            "Male",
-                            "01800000001",
-                            "Dhaka"
-                    )
-            );
-        }
-
-        // BOOK APPOINTMENT
-
-        Appointment appointment1 =
-                new Appointment(
-                        "A001",
-                        "P001",
-                        "D001",
-                        LocalDate.of(2026, 8, 20),
-                        LocalTime.of(10, 0)
+        User patient = new User(
+                        "U002",
+                        "Sabit",
+                        "sabit@queuecare.com",
+                        "1234",
+                        "PATIENT"
                 );
 
 
-        boolean booked =
-                appointmentService
-                        .bookAppointment(
-                                appointment1
-                        );
-
-
-        System.out.println(
-                "Appointment booked: "
-                + booked
-        );
-
-        // TRY SAME SLOT AGAIN
-
-        Appointment appointment2 =
-                new Appointment(
-                        "A002",
-                        "P001",
-                        "D001",
-                        LocalDate.of(2026, 8, 20),
-                        LocalTime.of(10, 0)
-                );
-
-
-        boolean secondBooking =
-                appointmentService
-                        .bookAppointment(
-                                appointment2
-                        );
-
-
-        System.out.println(
-                "Second booking: "
-                + secondBooking
-        );
-
-        // SHOW ALL APPOINTMENTS
-
-        System.out.println(
-                "\n===== ALL APPOINTMENTS ====="
-        );
-
-
-        for (Appointment appointment :
-                appointmentService
-                        .getAllAppointments()) {
+        if (userService.registerUser(patient)) {
 
             System.out.println(
-                    appointment.getAppointmentId()
-                    + " | Patient: "
-                    + appointment.getPatientId()
-                    + " | Doctor: "
-                    + appointment.getDoctorId()
-                    + " | Date: "
-                    + appointment.getDate()
-                    + " | Time: "
-                    + appointment.getTime()
-                    + " | Status: "
-                    + appointment.getStatus()
+                    "Patient registered successfully."
             );
+
+        } else {
+
+            System.out.println("Patient already exists.");
         }
 
-        // PATIENT APPOINTMENTS
+        // LOGIN TEST
 
-        System.out.println(
-                "\n===== PATIENT P001 ====="
-        );
+        System.out.println("\n===== LOGIN TEST =====");
 
+        User loggedIn = userService.login(
+                        "admin@queuecare.com",
+                        "admin123");
 
-        for (Appointment appointment :
-                appointmentService
-                        .getAppointmentsByPatient(
-                                "P001")) {
+        if (loggedIn != null) {
 
-            System.out.println(
-                    appointment.getAppointmentId()
-                    + " | "
-                    + appointment.getDate()
-                    + " | "
-                    + appointment.getTime()
-                    + " | "
-                    + appointment.getStatus()
-            );
+            System.out.println("Login successful!");
+
+            System.out.println("Name: " + loggedIn.getName());
+
+            System.out.println("Role: " + loggedIn.getRole());
+
+        } else {
+
+            System.out.println("Invalid email or password.");
         }
 
-        // DOCTOR APPOINTMENTS
+        // WRONG PASSWORD TEST
 
-        System.out.println(
-                "\n===== DOCTOR D001 ====="
-        );
+        System.out.println("\n===== WRONG PASSWORD TEST =====");
 
+        User failedLogin = userService.login("admin@queuecare.com","wrongpassword");
 
-        for (Appointment appointment :
-                appointmentService
-                        .getAppointmentsByDoctor(
-                                "D001")) {
+        if (failedLogin != null) {
 
-            System.out.println(
-                    appointment.getAppointmentId()
-                    + " | Patient: "
-                    + appointment.getPatientId()
-                    + " | "
-                    + appointment.getDate()
-                    + " | "
-                    + appointment.getTime()
-            );
+            System.out.println("Login successful!");
+
+        } else {
+
+            System.out.println("Invalid email or password.");
         }
-
-        // UPDATE STATUS
-
-        boolean updated =
-                appointmentService.updateStatus(
-                        "A001",
-                        "CONFIRMED"
-                );
-
-
-        System.out.println(
-                "\nStatus updated: "
-                + updated
-        );
-
-        // CANCEL APPOINTMENT
-
-        boolean cancelled =
-                appointmentService
-                        .cancelAppointment("A001");
-
-
-        System.out.println(
-                "Appointment cancelled: "
-                + cancelled
-        );
     }
 }
