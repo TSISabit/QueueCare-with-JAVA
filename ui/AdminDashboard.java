@@ -90,10 +90,7 @@ public class AdminDashboard extends JFrame {
 
         patientButton.addActionListener(e -> new PatientManagementFrame());
 
-        appointmentButton.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this,
-                    "Appointment Management will be added later.");
-        });
+        appointmentButton.addActionListener(e -> new AppointmentManagementFrame());
 
         logoutButton.addActionListener(e -> logout());
 
