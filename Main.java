@@ -1,123 +1,205 @@
-import model.Patient;
+import model.Appointment;
+import service.AppointmentService;
+import service.DoctorService;
 import service.PatientService;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class Main {
 
     public static void main(String[] args) {
 
+        DoctorService doctorService =
+                new DoctorService();
+
         PatientService patientService =
                 new PatientService();
 
-        // ADD PATIENT
+        AppointmentService appointmentService =
+                new AppointmentService();
 
-        Patient patient1 = new Patient("P001", "Sabit", "sabit@gmail.com", "1234", 22,
-                "Male",
-                "01800000001",
-                "Dhaka");
+        // MAKE SURE DOCTOR EXISTS
 
-        Patient patient2 = new Patient("P002", "Rahim", "rahim@gmail.com", "1234",25,
-                "Male",
-                "01800000002",
-                "Mirpur");
+        if (doctorService.findDoctorById("D001")
+                == null) {
 
-
-        boolean added1 = patientService.addPatient(patient1);
-
-        boolean added2 =patientService.addPatient(patient2);
-
-
-        System.out.println("Patient 1 added: " + added1);
-
-        System.out.println("Patient 2 added: " + added2);
-
-        // SHOW ALL PATIENTS
-
-        System.out.println("\n===== ALL PATIENTS =====");
-
-        List<Patient> patients =
-                patientService.getAllPatients();
-
-        for (Patient patient : patients) {
-
-            System.out.println(
-                    patient.getId() + " | " +
-                    patient.getName() + " | " +
-                    patient.getAge() + " | " +
-                    patient.getGender() + " | " +
-                    patient.getPhone()
+            doctorService.addDoctor(
+                    new model.Doctor(
+                            "D001",
+                            "Dr. Rahman",
+                            "rahman@queuecare.com",
+                            "1234",
+                            "01700000001",
+                            "Cardiologist",
+                            1000
+                    )
             );
         }
 
-        // FIND PATIENT BY ID
+        // MAKE SURE PATIENT EXISTS
 
-        System.out.println(
-                "\n===== FIND PATIENT ====="
-        );
+        if (patientService.findPatientById("P001")
+                == null) {
 
-        Patient found = patientService.findPatientById("P001");
-
-        if (found != null) {
-            System.out.println("Patient Found: " + found.getName());
-        } else {
-            System.out.println("Patient not found.");
+            patientService.addPatient(
+                    new model.Patient(
+                            "P001",
+                            "Sabit",
+                            "sabit@gmail.com",
+                            "1234",
+                            22,
+                            "Male",
+                            "01800000001",
+                            "Dhaka"
+                    )
+            );
         }
 
-        // SEARCH PATIENT BY NAME
+        // BOOK APPOINTMENT
 
-        System.out.println("\n===== SEARCH PATIENT =====");
-
-        List<Patient> result = patientService.searchPatient("rah");
-
-        for (Patient patient : result) {
-            System.out.println(patient.getId() + " | " + patient.getName());
-        }
-
-        // UPDATE PATIENT
-
-        boolean updated = patientService.updatePatient(
-                        "P002",
-                        "Md. Rahim",
-                        "mdrahim@gmail.com",
-                        26,
-                        "Male",
-                        "01900000002",
-                        "Uttara"
+        Appointment appointment1 =
+                new Appointment(
+                        "A001",
+                        "P001",
+                        "D001",
+                        LocalDate.of(2026, 8, 20),
+                        LocalTime.of(10, 0)
                 );
 
-        System.out.println("\nUpdate Result: " + updated);
 
-        // SHOW UPDATED PATIENT
+        boolean booked =
+                appointmentService
+                        .bookAppointment(
+                                appointment1
+                        );
 
-        Patient updatedPatient = patientService.findPatientById("P002");
 
-        if (updatedPatient != null) {
-            System.out.println("\n===== UPDATED PATIENT =====");
+        System.out.println(
+                "Appointment booked: "
+                + booked
+        );
 
-            System.out.println("Name: " + updatedPatient.getName());
+        // TRY SAME SLOT AGAIN
 
-            System.out.println("Email: " + updatedPatient.getEmail());
+        Appointment appointment2 =
+                new Appointment(
+                        "A002",
+                        "P001",
+                        "D001",
+                        LocalDate.of(2026, 8, 20),
+                        LocalTime.of(10, 0)
+                );
 
-            System.out.println("Age: " + updatedPatient.getAge());
 
-            System.out.println("Phone: " + updatedPatient.getPhone());
+        boolean secondBooking =
+                appointmentService
+                        .bookAppointment(
+                                appointment2
+                        );
 
-            System.out.println("Address: " + updatedPatient.getAddress());
+
+        System.out.println(
+                "Second booking: "
+                + secondBooking
+        );
+
+        // SHOW ALL APPOINTMENTS
+
+        System.out.println(
+                "\n===== ALL APPOINTMENTS ====="
+        );
+
+
+        for (Appointment appointment :
+                appointmentService
+                        .getAllAppointments()) {
+
+            System.out.println(
+                    appointment.getAppointmentId()
+                    + " | Patient: "
+                    + appointment.getPatientId()
+                    + " | Doctor: "
+                    + appointment.getDoctorId()
+                    + " | Date: "
+                    + appointment.getDate()
+                    + " | Time: "
+                    + appointment.getTime()
+                    + " | Status: "
+                    + appointment.getStatus()
+            );
         }
 
-        // DELETE PATIENT
+        // PATIENT APPOINTMENTS
 
-        boolean deleted = patientService.deletePatient("P002");
+        System.out.println(
+                "\n===== PATIENT P001 ====="
+        );
 
-        System.out.println("\nDelete Result: " + deleted);
 
-        // CHECK DELETE
+        for (Appointment appointment :
+                appointmentService
+                        .getAppointmentsByPatient(
+                                "P001")) {
 
-        Patient deletedPatient = patientService.findPatientById("P002");
-
-        if (deletedPatient == null) {
-            System.out.println("Patient P002 no longer exists.");
+            System.out.println(
+                    appointment.getAppointmentId()
+                    + " | "
+                    + appointment.getDate()
+                    + " | "
+                    + appointment.getTime()
+                    + " | "
+                    + appointment.getStatus()
+            );
         }
+
+        // DOCTOR APPOINTMENTS
+
+        System.out.println(
+                "\n===== DOCTOR D001 ====="
+        );
+
+
+        for (Appointment appointment :
+                appointmentService
+                        .getAppointmentsByDoctor(
+                                "D001")) {
+
+            System.out.println(
+                    appointment.getAppointmentId()
+                    + " | Patient: "
+                    + appointment.getPatientId()
+                    + " | "
+                    + appointment.getDate()
+                    + " | "
+                    + appointment.getTime()
+            );
+        }
+
+        // UPDATE STATUS
+
+        boolean updated =
+                appointmentService.updateStatus(
+                        "A001",
+                        "CONFIRMED"
+                );
+
+
+        System.out.println(
+                "\nStatus updated: "
+                + updated
+        );
+
+        // CANCEL APPOINTMENT
+
+        boolean cancelled =
+                appointmentService
+                        .cancelAppointment("A001");
+
+
+        System.out.println(
+                "Appointment cancelled: "
+                + cancelled
+        );
     }
 }
