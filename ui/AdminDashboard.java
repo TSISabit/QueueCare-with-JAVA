@@ -82,36 +82,33 @@ public class AdminDashboard extends JFrame {
 
         contentPanel.add(dashboardLabel);
 
-
         mainPanel.add(contentPanel, BorderLayout.CENTER);
 
         // BUTTON ACTIONS
 
         doctorButton.addActionListener(e -> new DoctorManagementFrame());
 
-        patientButton.addActionListener(e -> {JOptionPane.showMessageDialog(this,
-                            "Patient Management will be added later."
-                    );
-                });
+        patientButton.addActionListener(e -> {
+            JOptionPane.showMessageDialog(this,
+                    "Patient Management will be added later.");
+        });
 
-        appointmentButton.addActionListener(e -> {JOptionPane.showMessageDialog(this,
-                            "Appointment Management will be added later."
-                    );
-                });
-
+        appointmentButton.addActionListener(e -> {
+            JOptionPane.showMessageDialog(this,
+                    "Appointment Management will be added later.");
+        });
 
         logoutButton.addActionListener(e -> logout());
 
         add(mainPanel);
     }
 
-
     // LOGOUT
 
     private void logout() {
 
         int choice = JOptionPane.showConfirmDialog(this, "Are you sure you want to logout?",
-                        "Logout", JOptionPane.YES_NO_OPTION);
+                "Logout", JOptionPane.YES_NO_OPTION);
 
         if (choice == JOptionPane.YES_OPTION) {
 
