@@ -1,145 +1,123 @@
-import model.Doctor;
-import service.DoctorService;
+import model.Patient;
+import service.PatientService;
+
+import java.util.List;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        DoctorService doctorService =
-                new DoctorService();
+        PatientService patientService =
+                new PatientService();
+
+        // ADD PATIENT
+
+        Patient patient1 = new Patient("P001", "Sabit", "sabit@gmail.com", "1234", 22,
+                "Male",
+                "01800000001",
+                "Dhaka");
+
+        Patient patient2 = new Patient("P002", "Rahim", "rahim@gmail.com", "1234",25,
+                "Male",
+                "01800000002",
+                "Mirpur");
 
 
-        // =================================
-        // ADD DOCTOR
-        // =================================
+        boolean added1 = patientService.addPatient(patient1);
 
-        Doctor doctor = new Doctor(
-                "D003",
-                "Dr. Ahmed",
-                "ahmed@queuecare.com",
-                "1234",
-                "01700000003",
-                "Neurologist",
-                1200
-        );
+        boolean added2 =patientService.addPatient(patient2);
 
-        boolean added =
-                doctorService.addDoctor(doctor);
 
-        if (added) {
+        System.out.println("Patient 1 added: " + added1);
+
+        System.out.println("Patient 2 added: " + added2);
+
+        // SHOW ALL PATIENTS
+
+        System.out.println("\n===== ALL PATIENTS =====");
+
+        List<Patient> patients =
+                patientService.getAllPatients();
+
+        for (Patient patient : patients) {
+
             System.out.println(
-                    "Doctor added successfully."
-            );
-        } else {
-            System.out.println(
-                    "Doctor ID already exists."
+                    patient.getId() + " | " +
+                    patient.getName() + " | " +
+                    patient.getAge() + " | " +
+                    patient.getGender() + " | " +
+                    patient.getPhone()
             );
         }
 
-
-        // =================================
-        // SHOW ALL DOCTORS
-        // =================================
+        // FIND PATIENT BY ID
 
         System.out.println(
-                "\n===== ALL DOCTORS ====="
+                "\n===== FIND PATIENT ====="
         );
 
-        for (Doctor d :
-                doctorService.getAllDoctors()) {
+        Patient found = patientService.findPatientById("P001");
 
-            System.out.println(
-                    d.getId() + " | " +
-                    d.getName() + " | " +
-                    d.getSpecialization() + " | " +
-                    d.getConsultationFee()
-            );
+        if (found != null) {
+            System.out.println("Patient Found: " + found.getName());
+        } else {
+            System.out.println("Patient not found.");
         }
 
+        // SEARCH PATIENT BY NAME
 
-        // =================================
-        // UPDATE DOCTOR
-        // =================================
+        System.out.println("\n===== SEARCH PATIENT =====");
 
-        boolean updated =
-                doctorService.updateDoctor(
-                        "D003",
-                        "Dr. Ahmed Khan",
-                        "ahmedkhan@queuecare.com",
-                        "01711111111",
-                        "Neurosurgeon",
-                        1500
+        List<Patient> result = patientService.searchPatient("rah");
+
+        for (Patient patient : result) {
+            System.out.println(patient.getId() + " | " + patient.getName());
+        }
+
+        // UPDATE PATIENT
+
+        boolean updated = patientService.updatePatient(
+                        "P002",
+                        "Md. Rahim",
+                        "mdrahim@gmail.com",
+                        26,
+                        "Male",
+                        "01900000002",
+                        "Uttara"
                 );
 
-        System.out.println(
-                "\nUpdate Result: " + updated
-        );
+        System.out.println("\nUpdate Result: " + updated);
 
+        // SHOW UPDATED PATIENT
 
-        // =================================
-        // SHOW UPDATED DOCTOR
-        // =================================
+        Patient updatedPatient = patientService.findPatientById("P002");
 
-        Doctor updatedDoctor =
-                doctorService.findDoctorById("D003");
+        if (updatedPatient != null) {
+            System.out.println("\n===== UPDATED PATIENT =====");
 
-        if (updatedDoctor != null) {
+            System.out.println("Name: " + updatedPatient.getName());
 
-            System.out.println(
-                    "\n===== UPDATED DOCTOR ====="
-            );
+            System.out.println("Email: " + updatedPatient.getEmail());
 
-            System.out.println(
-                    "Name: "
-                    + updatedDoctor.getName()
-            );
+            System.out.println("Age: " + updatedPatient.getAge());
 
-            System.out.println(
-                    "Email: "
-                    + updatedDoctor.getEmail()
-            );
+            System.out.println("Phone: " + updatedPatient.getPhone());
 
-            System.out.println(
-                    "Phone: "
-                    + updatedDoctor.getPhone()
-            );
-
-            System.out.println(
-                    "Specialization: "
-                    + updatedDoctor.getSpecialization()
-            );
-
-            System.out.println(
-                    "Fee: "
-                    + updatedDoctor.getConsultationFee()
-            );
+            System.out.println("Address: " + updatedPatient.getAddress());
         }
 
+        // DELETE PATIENT
 
-        // =================================
-        // DELETE DOCTOR
-        // =================================
+        boolean deleted = patientService.deletePatient("P002");
 
-        boolean deleted =
-                doctorService.deleteDoctor("D003");
+        System.out.println("\nDelete Result: " + deleted);
 
-        System.out.println(
-                "\nDelete Result: " + deleted
-        );
+        // CHECK DELETE
 
+        Patient deletedPatient = patientService.findPatientById("P002");
 
-        // =================================
-        // CHECK AGAIN
-        // =================================
-
-        Doctor deletedDoctor =
-                doctorService.findDoctorById("D003");
-
-        if (deletedDoctor == null) {
-
-            System.out.println(
-                    "Doctor D003 no longer exists."
-            );
+        if (deletedPatient == null) {
+            System.out.println("Patient P002 no longer exists.");
         }
     }
 }
