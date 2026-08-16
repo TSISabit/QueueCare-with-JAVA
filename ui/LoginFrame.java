@@ -6,11 +6,14 @@ import service.UserService;
 import javax.swing.*;
 import java.awt.*;
 
+import service.DoctorApprovalService;
+
 public class LoginFrame extends JFrame {
     private JTextField emailField;
     private JPasswordField passwordField;
     private JComboBox<String> roleBox;
     private UserService userService;
+    private DoctorApprovalService doctorApprovalService;
 
     public LoginFrame() {
         userService = new UserService();
@@ -19,6 +22,7 @@ public class LoginFrame extends JFrame {
         setSize(450, 350);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        doctorApprovalService = new DoctorApprovalService();
 
         createUI();
         setVisible(true);
@@ -125,6 +129,17 @@ public class LoginFrame extends JFrame {
                     "Role Error",
                     JOptionPane.ERROR_MESSAGE);
             return;
+        }
+
+        if (user.getRole().equalsIgnoreCase("DOCTOR")) {
+            if (!doctorApprovalService.isApproved(user.getId())) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Your doctor account is waiting for admin approval.",
+                        "Account Pending",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
         }
 
         dispose();
