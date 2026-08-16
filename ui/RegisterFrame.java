@@ -8,6 +8,7 @@ import java.awt.*;
 import model.Doctor;
 import model.Patient;
 import service.UserService;
+import service.DoctorApprovalService;
 
 public class RegisterFrame extends JFrame {
     private JComboBox<String> roleBox;
@@ -22,6 +23,7 @@ public class RegisterFrame extends JFrame {
     private JTextField feeField;
     private UserService userService;
     private JPanel extraPanel;
+    private DoctorApprovalService doctorApprovalService;
 
     public RegisterFrame() {
         userService = new UserService();
@@ -29,6 +31,7 @@ public class RegisterFrame extends JFrame {
         setSize(500, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
+        doctorApprovalService = new DoctorApprovalService();
 
         createUI();
         setVisible(true);
@@ -262,10 +265,13 @@ public class RegisterFrame extends JFrame {
                         fee);
 
                 if (userService.registerUser(doctor)) {
+                    doctorApprovalService.createPendingRequest(doctor);
+
                     JOptionPane.showMessageDialog(
                             this,
                             "Doctor registration submitted.\nYour ID: " + id +
                                     "\n\nWaiting for admin approval.");
+
                     dispose();
                     new LoginFrame();
                 } else {
