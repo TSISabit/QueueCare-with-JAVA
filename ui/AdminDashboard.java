@@ -65,10 +65,13 @@ public class AdminDashboard extends JFrame {
 
         JButton logoutButton = new JButton("Logout");
 
+        JButton doctorApprovalButton = new JButton("Doctor Approval Requests");
+
         sidebar.add(doctorButton);
         sidebar.add(patientButton);
         sidebar.add(appointmentButton);
         sidebar.add(logoutButton);
+        sidebar.add(doctorApprovalButton);
 
         mainPanel.add(sidebar, BorderLayout.WEST);
 
