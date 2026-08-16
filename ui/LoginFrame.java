@@ -136,14 +136,12 @@ public class LoginFrame extends JFrame {
         // ROLE BASED REDIRECTION
 
         if (user.getRole().equalsIgnoreCase("ADMIN")) {
-
             new AdminDashboard(user);
-
+        } else if (user.getRole().equalsIgnoreCase("PATIENT")) {
+            new PatientDashboard(user);
         } else {
-
-            JOptionPane.showMessageDialog(null, "Dashboard for " + user.getRole()
-                            + " is not available yet.");
-
+            JOptionPane.showMessageDialog(null,
+                    "Dashboard for " + user.getRole() + " is not available yet.");
             new LoginFrame();
         }
     }
