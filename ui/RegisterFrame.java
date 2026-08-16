@@ -1,7 +1,13 @@
 package ui;
 
 import javax.swing.*;
+
+import service.UserService;
+
 import java.awt.*;
+import model.Doctor;
+import model.Patient;
+import service.UserService;
 
 public class RegisterFrame extends JFrame {
     private JComboBox<String> roleBox;
@@ -14,10 +20,11 @@ public class RegisterFrame extends JFrame {
     private JTextField addressField;
     private JTextField specializationField;
     private JTextField feeField;
-
+    private UserService userService;
     private JPanel extraPanel;
 
     public RegisterFrame() {
+        userService = new UserService();
         setTitle("QueueCare - Register");
         setSize(500, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -48,7 +55,7 @@ public class RegisterFrame extends JFrame {
         gbc.gridy = row;
         formPanel.add(new JLabel("Register As:"), gbc);
 
-        roleBox = new JComboBox<>(new String[]{"PATIENT", "DOCTOR"});
+        roleBox = new JComboBox<>(new String[] { "PATIENT", "DOCTOR" });
         gbc.gridx = 1;
         formPanel.add(roleBox, gbc);
         row++;
@@ -195,6 +202,13 @@ public class RegisterFrame extends JFrame {
             return;
         }
 
+        if (userService.findUserByEmail(email) != null) {
+            showError("An account with this email already exists.");
+            return;
+        }
+
+        String id = userService.generateId(role);
+
         if (role.equals("PATIENT")) {
             if (ageField.getText().trim().isEmpty() ||
                     genderField.getText().trim().isEmpty() ||
@@ -204,10 +218,29 @@ public class RegisterFrame extends JFrame {
             }
 
             try {
-                Integer.parseInt(ageField.getText().trim());
+                int age = Integer.parseInt(ageField.getText().trim());
+
+                Patient patient = new Patient(
+                        id,
+                        name,
+                        email,
+                        password,
+                        age,
+                        genderField.getText().trim(),
+                        phone,
+                        addressField.getText().trim());
+
+                if (userService.registerUser(patient)) {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Patient account created successfully.\nYour ID: " + id);
+                    dispose();
+                    new LoginFrame();
+                } else {
+                    showError("Registration failed.");
+                }
             } catch (NumberFormatException e) {
                 showError("Age must be a number.");
-                return;
             }
         } else {
             if (specializationField.getText().trim().isEmpty() ||
@@ -217,19 +250,31 @@ public class RegisterFrame extends JFrame {
             }
 
             try {
-                Double.parseDouble(feeField.getText().trim());
+                double fee = Double.parseDouble(feeField.getText().trim());
+
+                Doctor doctor = new Doctor(
+                        id,
+                        name,
+                        email,
+                        password,
+                        phone,
+                        specializationField.getText().trim(),
+                        fee);
+
+                if (userService.registerUser(doctor)) {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Doctor registration submitted.\nYour ID: " + id +
+                                    "\n\nWaiting for admin approval.");
+                    dispose();
+                    new LoginFrame();
+                } else {
+                    showError("Registration failed.");
+                }
             } catch (NumberFormatException e) {
                 showError("Consultation fee must be a number.");
-                return;
             }
         }
-
-        JOptionPane.showMessageDialog(
-                this,
-                role.equals("DOCTOR")
-                        ? "Doctor registration submitted. Waiting for admin approval."
-                        : "Patient registration information is valid."
-        );
     }
 
     private void showError(String message) {
@@ -237,7 +282,6 @@ public class RegisterFrame extends JFrame {
                 this,
                 message,
                 "Registration Error",
-                JOptionPane.ERROR_MESSAGE
-        );
+                JOptionPane.ERROR_MESSAGE);
     }
 }
