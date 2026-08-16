@@ -53,7 +53,7 @@ public class AdminDashboard extends JFrame {
 
         JPanel sidebar = new JPanel();
 
-        sidebar.setLayout(new GridLayout(5, 1, 10, 10));
+        sidebar.setLayout(new GridLayout(0, 1, 10, 10));
 
         sidebar.setBorder(BorderFactory.createEmptyBorder(20, 15, 20, 15));
 
@@ -96,6 +96,8 @@ public class AdminDashboard extends JFrame {
         appointmentButton.addActionListener(e -> new AppointmentManagementFrame());
 
         logoutButton.addActionListener(e -> logout());
+
+        doctorApprovalButton.addActionListener(e -> new DoctorApprovalFrame());
 
         add(mainPanel);
     }
