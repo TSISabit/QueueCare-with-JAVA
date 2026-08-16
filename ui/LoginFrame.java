@@ -27,8 +27,7 @@ public class LoginFrame extends JFrame {
     private void createUI() {
         JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBorder(
-                BorderFactory.createEmptyBorder(20, 30, 20, 30)
-        );
+                BorderFactory.createEmptyBorder(20, 30, 20, 30));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 8, 8, 8);
@@ -51,8 +50,7 @@ public class LoginFrame extends JFrame {
         mainPanel.add(roleLabel, gbc);
 
         roleBox = new JComboBox<>(
-                new String[]{"ADMIN", "DOCTOR", "PATIENT"}
-        );
+                new String[] { "ADMIN", "DOCTOR", "PATIENT" });
 
         gbc.gridx = 1;
         mainPanel.add(roleBox, gbc);
@@ -83,6 +81,15 @@ public class LoginFrame extends JFrame {
 
         loginButton.addActionListener(e -> login());
 
+        JButton registerButton = new JButton("Register");
+        gbc.gridy = 5;
+        mainPanel.add(registerButton, gbc);
+
+        registerButton.addActionListener(e -> {
+            dispose();
+            new RegisterFrame();
+        });
+
         add(mainPanel);
     }
 
@@ -96,8 +103,7 @@ public class LoginFrame extends JFrame {
                     this,
                     "Please enter email and password.",
                     "Login Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -108,8 +114,7 @@ public class LoginFrame extends JFrame {
                     this,
                     "Invalid email or password.",
                     "Login Failed",
-                    JOptionPane.ERROR_MESSAGE
-            );
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -118,8 +123,7 @@ public class LoginFrame extends JFrame {
                     this,
                     "Selected role does not match your account.",
                     "Role Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
