@@ -9,140 +9,128 @@ import java.awt.*;
 public class LoginFrame extends JFrame {
     private JTextField emailField;
     private JPasswordField passwordField;
-    private JButton loginButton;
-
+    private JComboBox<String> roleBox;
     private UserService userService;
 
     public LoginFrame() {
-
         userService = new UserService();
 
         setTitle("QueueCare - Login");
-
         setSize(450, 350);
-
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         setLocationRelativeTo(null);
 
-        setResizable(false);
-
         createUI();
-
         setVisible(true);
     }
 
     private void createUI() {
-        // Main panel
-        JPanel mainPanel = new JPanel();
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        mainPanel.setBorder(
+                BorderFactory.createEmptyBorder(20, 30, 20, 30)
+        );
 
-        mainPanel.setLayout(new BorderLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(
-                25, 35, 25, 35));
+        JLabel titleLabel = new JLabel("QueueCare");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // TITLE
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        mainPanel.add(titleLabel, gbc);
 
-        JLabel titleLabel = new JLabel("QueueCare", SwingConstants.CENTER);
+        gbc.gridwidth = 1;
 
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        JLabel roleLabel = new JLabel("Login As:");
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        mainPanel.add(roleLabel, gbc);
 
-        JLabel subtitleLabel = new JLabel("Hospital Appointment Management", SwingConstants.CENTER);
+        roleBox = new JComboBox<>(
+                new String[]{"ADMIN", "DOCTOR", "PATIENT"}
+        );
 
-        subtitleLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-
-        JPanel titlePanel = new JPanel(new GridLayout(2, 1));
-
-        titlePanel.add(titleLabel);
-        titlePanel.add(subtitleLabel);
-
-        mainPanel.add(titlePanel, BorderLayout.NORTH);
-
-        // FORM
-
-        JPanel formPanel = new JPanel(new GridLayout(4, 1, 5, 5));
+        gbc.gridx = 1;
+        mainPanel.add(roleBox, gbc);
 
         JLabel emailLabel = new JLabel("Email:");
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        mainPanel.add(emailLabel, gbc);
 
         emailField = new JTextField();
+        gbc.gridx = 1;
+        mainPanel.add(emailField, gbc);
 
         JLabel passwordLabel = new JLabel("Password:");
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        mainPanel.add(passwordLabel, gbc);
 
         passwordField = new JPasswordField();
+        gbc.gridx = 1;
+        mainPanel.add(passwordField, gbc);
 
-        formPanel.add(emailLabel);
-        formPanel.add(emailField);
-        formPanel.add(passwordLabel);
-        formPanel.add(passwordField);
-
-        mainPanel.add(formPanel, BorderLayout.CENTER);
-
-        // LOGIN BUTTON
-
-        loginButton = new JButton("LOGIN");
-
-        loginButton.setFont(new Font("Arial", Font.BOLD, 14));
+        JButton loginButton = new JButton("Login");
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        mainPanel.add(loginButton, gbc);
 
         loginButton.addActionListener(e -> login());
-
-        JPanel buttonPanel = new JPanel();
-
-        buttonPanel.add(loginButton);
-
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         add(mainPanel);
     }
 
-    // LOGIN LOGIC
-
     private void login() {
-
         String email = emailField.getText().trim();
-
         String password = new String(passwordField.getPassword());
+        String selectedRole = roleBox.getSelectedItem().toString();
 
-        // Empty field validation
         if (email.isEmpty() || password.isEmpty()) {
-
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(
+                    this,
                     "Please enter email and password.",
                     "Login Error",
-                    JOptionPane.ERROR_MESSAGE);
-
+                    JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
 
-        // Authenticate user
         User user = userService.login(email, password);
 
         if (user == null) {
-
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(
+                    this,
                     "Invalid email or password.",
                     "Login Failed",
-                    JOptionPane.ERROR_MESSAGE);
-
+                    JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
 
-        // LOGIN SUCCESSFUL
+        if (!user.getRole().equalsIgnoreCase(selectedRole)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Selected role does not match your account.",
+                    "Role Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
 
-        JOptionPane.showMessageDialog(this, "Welcome, " + user.getName() + "!");
-
-        // Hide login window
         dispose();
-
-        // ROLE BASED REDIRECTION
 
         if (user.getRole().equalsIgnoreCase("ADMIN")) {
             new AdminDashboard(user);
+        } else if (user.getRole().equalsIgnoreCase("DOCTOR")) {
+            new DoctorDashboard(user);
         } else if (user.getRole().equalsIgnoreCase("PATIENT")) {
             new PatientDashboard(user);
-        } else {
-            JOptionPane.showMessageDialog(null,
-                    "Dashboard for " + user.getRole() + " is not available yet.");
-            new LoginFrame();
         }
     }
 }
