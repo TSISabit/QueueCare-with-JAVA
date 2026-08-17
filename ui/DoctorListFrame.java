@@ -13,8 +13,10 @@ public class DoctorListFrame extends JFrame {
     private DoctorService doctorService;
     private JTable doctorTable;
     private DefaultTableModel tableModel;
+    private String patientId;
 
-    public DoctorListFrame() {
+    public DoctorListFrame(String patientId) {
+        this.patientId = patientId;
         doctorService = new DoctorService();
 
         setTitle("QueueCare - Find Doctor");
@@ -31,8 +33,7 @@ public class DoctorListFrame extends JFrame {
     private void createUI() {
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        );
+                BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
         JLabel titleLabel = new JLabel("Available Doctors");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
@@ -56,8 +57,7 @@ public class DoctorListFrame extends JFrame {
 
         mainPanel.add(
                 new JScrollPane(doctorTable),
-                BorderLayout.CENTER
-        );
+                BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel();
 
@@ -70,12 +70,10 @@ public class DoctorListFrame extends JFrame {
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         refreshButton.addActionListener(
-                e -> loadDoctors()
-        );
+                e -> loadDoctors());
 
         bookButton.addActionListener(
-                e -> openBooking()
-        );
+                e -> openBooking());
 
         add(mainPanel);
     }
@@ -104,14 +102,12 @@ public class DoctorListFrame extends JFrame {
                     this,
                     "Please select a doctor first.",
                     "No Selection",
-                    JOptionPane.WARNING_MESSAGE
-            );
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        String doctorId =
-                tableModel.getValueAt(selectedRow, 0).toString();
+        String doctorId = tableModel.getValueAt(selectedRow, 0).toString();
 
-        new BookAppointmentFrame(doctorId);
+        new BookAppointmentFrame(patientId, doctorId);
     }
 }
