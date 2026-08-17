@@ -1,13 +1,11 @@
 package ui;
 
 import javax.swing.*;
-
-import service.UserService;
-
 import java.awt.*;
 import model.Doctor;
 import model.Patient;
 import service.UserService;
+import service.DoctorService;
 import service.DoctorApprovalService;
 
 public class RegisterFrame extends JFrame {
@@ -24,9 +22,11 @@ public class RegisterFrame extends JFrame {
     private UserService userService;
     private JPanel extraPanel;
     private DoctorApprovalService doctorApprovalService;
+    private DoctorService doctorService;
 
     public RegisterFrame() {
         userService = new UserService();
+        doctorService = new DoctorService();
         setTitle("QueueCare - Register");
         setSize(500, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -265,6 +265,7 @@ public class RegisterFrame extends JFrame {
                         fee);
 
                 if (userService.registerUser(doctor)) {
+                    doctorService.addDoctor(doctor);
                     doctorApprovalService.createPendingRequest(doctor);
 
                     JOptionPane.showMessageDialog(
