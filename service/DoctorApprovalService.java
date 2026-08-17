@@ -40,6 +40,7 @@ public class DoctorApprovalService {
 
     public String getStatus(String doctorId) {
         List<String> data = FileManager.readFromFile(FILE_NAME);
+        String status = "NOT_FOUND";
 
         for (String line : data) {
             if (line.trim().isEmpty()) {
@@ -50,11 +51,11 @@ public class DoctorApprovalService {
 
             if (parts.length == 4 &&
                     parts[0].equalsIgnoreCase(doctorId)) {
-                return parts[3];
+                status = parts[3];
             }
         }
 
-        return "NOT_FOUND";
+        return status;
     }
 
     public boolean updateStatus(String doctorId, String newStatus) {
@@ -72,14 +73,15 @@ public class DoctorApprovalService {
             if (parts.length == 4 &&
                     parts[0].equalsIgnoreCase(doctorId)) {
 
-                updatedData.add(
-                        parts[0] + "," +
-                        parts[1] + "," +
-                        parts[2] + "," +
-                        newStatus
-                );
-
-                found = true;
+                if (!found) {
+                    updatedData.add(
+                            parts[0] + "," +
+                            parts[1] + "," +
+                            parts[2] + "," +
+                            newStatus
+                    );
+                    found = true;
+                }
             } else {
                 updatedData.add(line);
             }
