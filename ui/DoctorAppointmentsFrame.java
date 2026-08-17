@@ -9,11 +9,13 @@ import java.awt.*;
 import java.util.List;
 
 public class DoctorAppointmentsFrame extends JFrame {
+    private String doctorId;
     private AppointmentService appointmentService;
     private JTable appointmentTable;
     private DefaultTableModel tableModel;
 
     public DoctorAppointmentsFrame(String doctorId) {
+        this.doctorId = doctorId;
         appointmentService = new AppointmentService();
 
         setTitle("QueueCare - My Appointments");
@@ -21,13 +23,13 @@ public class DoctorAppointmentsFrame extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        createUI(doctorId);
-        loadAppointments(doctorId);
+        createUI();
+        loadAppointments();
 
         setVisible(true);
     }
 
-    private void createUI(String doctorId) {
+    private void createUI() {
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
@@ -53,7 +55,7 @@ public class DoctorAppointmentsFrame extends JFrame {
         appointmentTable = new JTable(tableModel);
         appointmentTable.setRowHeight(25);
 
-        mainPanel.add(new JScrollPane(appointmentTable),BorderLayout.CENTER);
+        mainPanel.add(new JScrollPane(appointmentTable), BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel();
 
@@ -69,21 +71,19 @@ public class DoctorAppointmentsFrame extends JFrame {
 
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        confirmButton.addActionListener(e -> updateStatus(doctorId, "CONFIRMED"));
-
-        completeButton.addActionListener(e -> updateStatus(doctorId, "COMPLETED"));
-
-        cancelButton.addActionListener(e -> updateStatus(doctorId, "CANCELLED"));
-
-        refreshButton.addActionListener(e -> loadAppointments(doctorId));
+        confirmButton.addActionListener(e -> updateStatus("CONFIRMED"));
+        completeButton.addActionListener(e -> updateStatus("COMPLETED"));
+        cancelButton.addActionListener(e -> updateStatus("CANCELLED"));
+        refreshButton.addActionListener(e -> loadAppointments());
 
         add(mainPanel);
     }
 
-    private void loadAppointments(String doctorId) {
+    private void loadAppointments() {
         tableModel.setRowCount(0);
 
-        List<Appointment> appointments = appointmentService.getAppointmentsByDoctor(doctorId);
+        List<Appointment> appointments =
+                appointmentService.getAppointmentsByDoctor(doctorId);
 
         for (Appointment appointment : appointments) {
             Object[] row = {
@@ -98,26 +98,54 @@ public class DoctorAppointmentsFrame extends JFrame {
         }
     }
 
-    private void updateStatus(String doctorId, String status) {
+    private void updateStatus(String newStatus) {
         int selectedRow = appointmentTable.getSelectedRow();
 
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select an appointment first.",
-                    "No Selection", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please select an appointment first.",
+                    "No Selection",
+                    JOptionPane.WARNING_MESSAGE
+            );
             return;
         }
 
-        String appointmentId = tableModel.getValueAt(selectedRow, 0).toString();
+        String currentStatus =
+                tableModel.getValueAt(selectedRow, 4).toString();
 
-        boolean updated = appointmentService.updateStatus(appointmentId, status);
+        if (currentStatus.equalsIgnoreCase("CANCELLED") ||
+                currentStatus.equalsIgnoreCase("COMPLETED")) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "This appointment is already " + currentStatus + "."
+            );
+            return;
+        }
+
+        String appointmentId =
+                tableModel.getValueAt(selectedRow, 0).toString();
+
+        boolean updated =
+                appointmentService.updateStatus(
+                        appointmentId,
+                        newStatus
+                );
 
         if (updated) {
-            JOptionPane.showMessageDialog(this, "Appointment status changed to " + status + ".");
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Appointment status changed to " + newStatus + "."
+            );
 
-            loadAppointments(doctorId);
+            loadAppointments();
         } else {
-            JOptionPane.showMessageDialog(this, "Could not update appointment.",
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Could not update appointment.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 }
