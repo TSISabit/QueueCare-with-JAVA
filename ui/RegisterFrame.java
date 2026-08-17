@@ -6,7 +6,9 @@ import model.Doctor;
 import model.Patient;
 import service.UserService;
 import service.DoctorService;
+import service.PatientService;
 import service.DoctorApprovalService;
+import service.PatientService;
 
 public class RegisterFrame extends JFrame {
     private JComboBox<String> roleBox;
@@ -23,6 +25,7 @@ public class RegisterFrame extends JFrame {
     private JPanel extraPanel;
     private DoctorApprovalService doctorApprovalService;
     private DoctorService doctorService;
+    private PatientService patientService;
 
     public RegisterFrame() {
         userService = new UserService();
@@ -32,6 +35,7 @@ public class RegisterFrame extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         doctorApprovalService = new DoctorApprovalService();
+        patientService = new PatientService();
 
         createUI();
         setVisible(true);
@@ -234,9 +238,17 @@ public class RegisterFrame extends JFrame {
                         addressField.getText().trim());
 
                 if (userService.registerUser(patient)) {
+                    boolean patientAdded = patientService.addPatient(patient);
+
+                    if (!patientAdded) {
+                        showError("Patient account was created, but patient profile could not be saved.");
+                        return;
+                    }
+
                     JOptionPane.showMessageDialog(
                             this,
                             "Patient account created successfully.\nYour ID: " + id);
+
                     dispose();
                     new LoginFrame();
                 } else {

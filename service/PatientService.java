@@ -48,7 +48,7 @@ public class PatientService {
                 continue;
             }
 
-            String[] parts = line.split(",");
+            String[] parts = line.split(",", 8);
 
             if (parts.length != 8) {
                 continue;
