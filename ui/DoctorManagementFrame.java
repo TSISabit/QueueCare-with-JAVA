@@ -2,6 +2,8 @@ package ui;
 
 import model.Doctor;
 import service.DoctorService;
+import service.UserService;
+import service.DoctorApprovalService;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -11,13 +13,16 @@ import java.util.List;
 public class DoctorManagementFrame extends JFrame {
 
     private DoctorService doctorService;
+    private UserService userService;
+    private DoctorApprovalService doctorApprovalService;
 
     private JTable doctorTable;
     private DefaultTableModel tableModel;
 
-
     public DoctorManagementFrame() {
         doctorService = new DoctorService();
+        userService = new UserService();
+        doctorApprovalService = new DoctorApprovalService();
 
         setTitle("QueueCare - Manage Doctors");
 
@@ -48,7 +53,6 @@ public class DoctorManagementFrame extends JFrame {
 
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
 
-
         mainPanel.add(titleLabel, BorderLayout.NORTH);
 
         // TABLE
@@ -63,10 +67,11 @@ public class DoctorManagementFrame extends JFrame {
         };
 
         tableModel = new DefaultTableModel(columns, 0) {
-                    @Override
-                    public boolean isCellEditable(int row, int column) {
-                        return false;
-                    }};
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
 
         doctorTable = new JTable(tableModel);
 
@@ -140,56 +145,37 @@ public class DoctorManagementFrame extends JFrame {
     // ADD DOCTOR
 
     private void addDoctor() {
-
         JTextField idField = new JTextField();
-
         JTextField nameField = new JTextField();
-
         JTextField emailField = new JTextField();
-
         JPasswordField passwordField = new JPasswordField();
-
         JTextField phoneField = new JTextField();
-
         JTextField specializationField = new JTextField();
-
         JTextField feeField = new JTextField();
-
 
         JPanel panel = new JPanel(new GridLayout(7, 2, 5, 5));
 
         panel.add(new JLabel("Doctor ID:"));
-
         panel.add(idField);
-
         panel.add(new JLabel("Name:"));
-
         panel.add(nameField);
-
         panel.add(new JLabel("Email:"));
-
         panel.add(emailField);
-
         panel.add(new JLabel("Password:"));
-
         panel.add(passwordField);
-
         panel.add(new JLabel("Phone:"));
-
         panel.add(phoneField);
-
         panel.add(new JLabel("Specialization:"));
-
         panel.add(specializationField);
-
         panel.add(new JLabel("Consultation Fee:"));
-
         panel.add(feeField);
 
-        int result =JOptionPane.showConfirmDialog(this, panel, "Add Doctor",
-                        JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.PLAIN_MESSAGE
-                );
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                panel,
+                "Add Doctor",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
 
         if (result != JOptionPane.OK_OPTION) {
             return;
@@ -197,47 +183,91 @@ public class DoctorManagementFrame extends JFrame {
 
         try {
             String id = idField.getText().trim();
-
             String name = nameField.getText().trim();
-
             String email = emailField.getText().trim();
-
             String password = new String(passwordField.getPassword());
-
             String phone = phoneField.getText().trim();
-
             String specialization = specializationField.getText().trim();
 
-            double fee = Double.parseDouble(feeField.getText().trim());
-
-            if (id.isEmpty() || name.isEmpty() || email.isEmpty() || password.isEmpty() || phone.isEmpty() || specialization.isEmpty()) {
-
-                JOptionPane.showMessageDialog(this, "Please fill all fields.",
-                        "Validation Error", JOptionPane.ERROR_MESSAGE);
+            if (id.isEmpty() || name.isEmpty() || email.isEmpty() ||
+                    password.isEmpty() || phone.isEmpty() ||
+                    specialization.isEmpty() || feeField.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please fill all fields.",
+                        "Validation Error",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            Doctor doctor = new Doctor(id, name, email, password,
-                            phone, specialization, fee);
-
-            boolean added = doctorService.addDoctor(doctor);
-
-            if (added) {
-                JOptionPane.showMessageDialog(this, "Doctor added successfully.");
-                loadDoctors();
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "Doctor ID already exists.",
-                        "Error", JOptionPane.ERROR_MESSAGE);
+            if (userService.findUserById(id) != null) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "This Doctor ID already exists.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
             }
 
+            if (userService.findUserByEmail(email) != null) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "An account with this email already exists.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            double fee = Double.parseDouble(feeField.getText().trim());
+
+            Doctor doctor = new Doctor(
+                    id,
+                    name,
+                    email,
+                    password,
+                    phone,
+                    specialization,
+                    fee);
+
+            boolean userAdded = userService.registerUser(doctor);
+
+            if (!userAdded) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Could not create Doctor account.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            boolean doctorAdded = doctorService.addDoctor(doctor);
+
+            if (!doctorAdded) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Doctor account was created, but Doctor profile could not be added.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            doctorApprovalService.createPendingRequest(doctor);
+            doctorApprovalService.updateStatus(id, "APPROVED");
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Doctor added and approved successfully.");
+
+            loadDoctors();
+
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Consultation fee must be a number.",
-                    "Invalid Input", JOptionPane.ERROR_MESSAGE
-            );
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Consultation fee must be a number.",
+                    "Invalid Input",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
-
 
     // UPDATE DOCTOR
 
@@ -259,7 +289,7 @@ public class DoctorManagementFrame extends JFrame {
 
         String currentPhone = tableModel.getValueAt(selectedRow, 3).toString();
 
-        String currentSpecialization = tableModel.getValueAt(selectedRow,4).toString();
+        String currentSpecialization = tableModel.getValueAt(selectedRow, 4).toString();
 
         String currentFee = tableModel.getValueAt(selectedRow, 5).toString();
 
@@ -274,7 +304,6 @@ public class DoctorManagementFrame extends JFrame {
         JTextField feeField = new JTextField(currentFee);
 
         JPanel panel = new JPanel(new GridLayout(5, 2, 5, 5));
-
 
         panel.add(new JLabel("Name:"));
 
@@ -297,28 +326,26 @@ public class DoctorManagementFrame extends JFrame {
         panel.add(feeField);
 
         int result = JOptionPane.showConfirmDialog(this, panel, "Update Doctor",
-                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         if (result != JOptionPane.OK_OPTION) {
             return;
         }
 
-
         try {
             double fee = Double.parseDouble(feeField.getText().trim());
 
             boolean updated = doctorService.updateDoctor(id,
-                            nameField.getText().trim(),
-                            emailField.getText().trim(),
-                            phoneField.getText().trim(),
-                            specializationField.getText().trim(), fee);
+                    nameField.getText().trim(),
+                    emailField.getText().trim(),
+                    phoneField.getText().trim(),
+                    specializationField.getText().trim(), fee);
 
             if (updated) {
                 JOptionPane.showMessageDialog(this, "Doctor updated successfully.");
 
                 loadDoctors();
-            }
-            else {
+            } else {
                 JOptionPane.showMessageDialog(this, "Doctor could not be updated.",
                         "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -346,7 +373,7 @@ public class DoctorManagementFrame extends JFrame {
         String name = tableModel.getValueAt(selectedRow, 1).toString();
 
         int confirmation = JOptionPane.showConfirmDialog(this, "Delete Dr. " + name + "?",
-                        "Confirm Delete", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                "Confirm Delete", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
         if (confirmation != JOptionPane.YES_OPTION) {
             return;
@@ -359,8 +386,7 @@ public class DoctorManagementFrame extends JFrame {
 
             loadDoctors();
 
-        } 
-        else {
+        } else {
             JOptionPane.showMessageDialog(this, "Doctor could not be deleted.",
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
