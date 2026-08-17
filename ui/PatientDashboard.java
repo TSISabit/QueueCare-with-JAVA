@@ -68,8 +68,8 @@ public class PatientDashboard extends JFrame {
 
         doctorsButton.addActionListener(e -> JOptionPane.showMessageDialog(this, "Doctor search will be added soon."));
 
-        bookButton
-                .addActionListener(e -> JOptionPane.showMessageDialog(this, "Appointment booking will be added soon."));
+        bookButton.addActionListener(
+                e -> new DoctorListFrame(loggedInUser.getId()));
 
         appointmentsButton.addActionListener(
                 e -> new PatientAppointmentsFrame(loggedInUser.getId()));
