@@ -1,7 +1,6 @@
 package ui;
 
 import model.Doctor;
-import model.User;
 import service.DoctorService;
 
 import javax.swing.*;

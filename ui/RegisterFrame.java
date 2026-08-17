@@ -8,7 +8,6 @@ import service.UserService;
 import service.DoctorService;
 import service.PatientService;
 import service.DoctorApprovalService;
-import service.PatientService;
 
 public class RegisterFrame extends JFrame {
     private JComboBox<String> roleBox;
