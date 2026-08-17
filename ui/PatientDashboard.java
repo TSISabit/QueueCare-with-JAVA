@@ -63,13 +63,18 @@ public class PatientDashboard extends JFrame {
 
         mainPanel.add(contentPanel, BorderLayout.CENTER);
 
-        profileButton.addActionListener(e -> JOptionPane.showMessageDialog(this, "Patient profile will be added soon."));
+        profileButton
+                .addActionListener(e -> JOptionPane.showMessageDialog(this, "Patient profile will be added soon."));
 
         doctorsButton.addActionListener(e -> JOptionPane.showMessageDialog(this, "Doctor search will be added soon."));
 
-        bookButton.addActionListener(e -> JOptionPane.showMessageDialog(this, "Appointment booking will be added soon."));
+        bookButton
+                .addActionListener(e -> JOptionPane.showMessageDialog(this, "Appointment booking will be added soon."));
 
-        appointmentsButton.addActionListener(e -> JOptionPane.showMessageDialog(this, "Your appointments will be shown here."));
+        appointmentsButton
+                .addActionListener(e -> JOptionPane.showMessageDialog(this, "Your appointments will be shown here."));
+
+        doctorsButton.addActionListener(e -> new DoctorListFrame());
 
         logoutButton.addActionListener(e -> logout());
 
