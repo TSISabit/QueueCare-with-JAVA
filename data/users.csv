@@ -1,5 +1,2 @@
 U001,QueueCare Admin,admin@queuecare.com,admin123,ADMIN
-U002,Sabit,sabit@queuecare.com,1234,PATIENT
-P002,Rahim,rahim@gmail.com,1234,PATIENT
-D001,Dr. Mohammad Ali,ali@gmail.com,1234,DOCTOR
-D002,Dr. Karim,karim@gmail.com,1234,DOCTOR
+D001,Dr. Ahmed,ahmed@gmail.com,1234,DOCTOR
