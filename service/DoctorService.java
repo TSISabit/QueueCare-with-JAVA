@@ -18,8 +18,7 @@ public class DoctorService {
             return false;
         }
 
-        String data =
-                doctor.getId() + "," +
+        String data = doctor.getId() + "," +
                 doctor.getName() + "," +
                 doctor.getEmail() + "," +
                 doctor.getPassword() + "," +
@@ -59,8 +58,7 @@ public class DoctorService {
                     parts[3],
                     parts[4],
                     parts[5],
-                    Double.parseDouble(parts[6])
-            );
+                    Double.parseDouble(parts[6]));
 
             doctors.add(doctor);
         }
@@ -167,6 +165,19 @@ public class DoctorService {
         return true;
     }
 
+    public List<Doctor> getApprovedDoctors() {
+        List<Doctor> approvedDoctors = new ArrayList<>();
+        DoctorApprovalService approvalService = new DoctorApprovalService();
+
+        for (Doctor doctor : getAllDoctors()) {
+            if (approvalService.isApproved(doctor.getId())) {
+                approvedDoctors.add(doctor);
+            }
+        }
+
+        return approvedDoctors;
+    }
+
     // Save complete doctor list
     private void saveAllDoctors(List<Doctor> doctors) {
 
@@ -175,32 +186,30 @@ public class DoctorService {
         for (Doctor doctor : doctors) {
 
             data.append(
-                    doctor.getId()
-            ).append(",")
-             .append(
-                    doctor.getName()
-            ).append(",")
-             .append(
-                    doctor.getEmail()
-            ).append(",")
-             .append(
-                    doctor.getPassword()
-            ).append(",")
-             .append(
-                    doctor.getPhone()
-            ).append(",")
-             .append(
-                    doctor.getSpecialization()
-            ).append(",")
-             .append(
-                    doctor.getConsultationFee()
-            ).append("\n");
+                    doctor.getId()).append(",")
+                    .append(
+                            doctor.getName())
+                    .append(",")
+                    .append(
+                            doctor.getEmail())
+                    .append(",")
+                    .append(
+                            doctor.getPassword())
+                    .append(",")
+                    .append(
+                            doctor.getPhone())
+                    .append(",")
+                    .append(
+                            doctor.getSpecialization())
+                    .append(",")
+                    .append(
+                            doctor.getConsultationFee())
+                    .append("\n");
         }
 
         FileManager.writeToFile(
                 FILE_NAME,
                 data.toString(),
-                false
-        );
+                false);
     }
 }
