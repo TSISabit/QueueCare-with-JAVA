@@ -272,7 +272,6 @@ public class DoctorManagementFrame extends JFrame {
     // UPDATE DOCTOR
 
     private void updateDoctor() {
-
         int selectedRow = doctorTable.getSelectedRow();
 
         if (selectedRow == -1) {
@@ -282,78 +281,102 @@ public class DoctorManagementFrame extends JFrame {
         }
 
         String id = tableModel.getValueAt(selectedRow, 0).toString();
-
         String currentName = tableModel.getValueAt(selectedRow, 1).toString();
-
         String currentEmail = tableModel.getValueAt(selectedRow, 2).toString();
-
         String currentPhone = tableModel.getValueAt(selectedRow, 3).toString();
-
         String currentSpecialization = tableModel.getValueAt(selectedRow, 4).toString();
-
         String currentFee = tableModel.getValueAt(selectedRow, 5).toString();
 
         JTextField nameField = new JTextField(currentName);
-
         JTextField emailField = new JTextField(currentEmail);
-
         JTextField phoneField = new JTextField(currentPhone);
-
         JTextField specializationField = new JTextField(currentSpecialization);
-
         JTextField feeField = new JTextField(currentFee);
 
         JPanel panel = new JPanel(new GridLayout(5, 2, 5, 5));
 
         panel.add(new JLabel("Name:"));
-
         panel.add(nameField);
-
         panel.add(new JLabel("Email:"));
-
         panel.add(emailField);
-
         panel.add(new JLabel("Phone:"));
-
         panel.add(phoneField);
-
         panel.add(new JLabel("Specialization:"));
-
         panel.add(specializationField);
-
         panel.add(new JLabel("Consultation Fee:"));
-
         panel.add(feeField);
 
-        int result = JOptionPane.showConfirmDialog(this, panel, "Update Doctor",
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                panel,
+                "Update Doctor",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
 
         if (result != JOptionPane.OK_OPTION) {
             return;
         }
 
         try {
+            String name = nameField.getText().trim();
+            String email = emailField.getText().trim();
+            String phone = phoneField.getText().trim();
+            String specialization = specializationField.getText().trim();
             double fee = Double.parseDouble(feeField.getText().trim());
 
-            boolean updated = doctorService.updateDoctor(id,
-                    nameField.getText().trim(),
-                    emailField.getText().trim(),
-                    phoneField.getText().trim(),
-                    specializationField.getText().trim(), fee);
-
-            if (updated) {
-                JOptionPane.showMessageDialog(this, "Doctor updated successfully.");
-
-                loadDoctors();
-            } else {
-                JOptionPane.showMessageDialog(this, "Doctor could not be updated.",
-                        "Error", JOptionPane.ERROR_MESSAGE);
+            if (name.isEmpty() || email.isEmpty() ||
+                    phone.isEmpty() || specialization.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please fill all fields.",
+                        "Validation Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
             }
 
-        } catch (NumberFormatException e) {
+            boolean doctorUpdated = doctorService.updateDoctor(
+                    id,
+                    name,
+                    email,
+                    phone,
+                    specialization,
+                    fee);
 
-            JOptionPane.showMessageDialog(this, "Consultation fee must be a number.",
-                    "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            if (!doctorUpdated) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Doctor could not be updated.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            boolean userUpdated = userService.updateUser(
+                    id,
+                    name,
+                    email);
+
+            if (!userUpdated) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Doctor updated, but users.csv could not be updated.",
+                        "Synchronization Warning",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Doctor updated successfully.");
+
+            loadDoctors();
+
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Consultation fee must be a number.",
+                    "Invalid Input",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
