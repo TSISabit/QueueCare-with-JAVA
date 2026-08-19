@@ -10,13 +10,27 @@ public class DoctorApprovalService {
     private static final String FILE_NAME = "data/doctor_status.csv";
 
     public void createPendingRequest(User doctor) {
-        if (getStatus(doctor.getId()).equals("NOT_FOUND")) {
-            String data = doctor.getId() + "," +
-                    doctor.getName() + "," +
-                    doctor.getEmail() + ",PENDING\n";
+        List<String> data = FileManager.readFromFile(FILE_NAME);
 
-            FileManager.writeToFile(FILE_NAME, data);
+        for (String line : data) {
+            if (line.trim().isEmpty()) {
+                continue;
+            }
+
+            String[] parts = line.split(",");
+
+            if (parts.length == 4 &&
+                    parts[0].equalsIgnoreCase(doctor.getId())) {
+                return;
+            }
         }
+
+        String request =
+                doctor.getId() + "," +
+                doctor.getName() + "," +
+                doctor.getEmail() + ",PENDING\n";
+
+        FileManager.writeToFile(FILE_NAME, request);
     }
 
     public List<String[]> getAllRequests() {
@@ -40,6 +54,7 @@ public class DoctorApprovalService {
 
     public String getStatus(String doctorId) {
         List<String> data = FileManager.readFromFile(FILE_NAME);
+        String status = "NOT_FOUND";
 
         for (String line : data) {
             if (line.trim().isEmpty()) {
@@ -49,18 +64,17 @@ public class DoctorApprovalService {
             String[] parts = line.split(",");
 
             if (parts.length == 4 &&
-                    parts[0].trim().equalsIgnoreCase(doctorId.trim())) {
-                return parts[3].trim();
+                    parts[0].equalsIgnoreCase(doctorId)) {
+                status = parts[3];
             }
         }
 
-        return "NOT_FOUND";
+        return status;
     }
 
     public boolean updateStatus(String doctorId, String newStatus) {
         List<String> data = FileManager.readFromFile(FILE_NAME);
         List<String> updatedData = new ArrayList<>();
-
         boolean found = false;
 
         for (String line : data) {
@@ -71,34 +85,31 @@ public class DoctorApprovalService {
             String[] parts = line.split(",");
 
             if (parts.length == 4 &&
-                    parts[0].trim().equalsIgnoreCase(doctorId.trim())) {
+                    parts[0].equalsIgnoreCase(doctorId)) {
 
                 if (!found) {
                     updatedData.add(
-                            parts[0].trim() + "," +
-                            parts[1].trim() + "," +
-                            parts[2].trim() + "," +
+                            parts[0] + "," +
+                            parts[1] + "," +
+                            parts[2] + "," +
                             newStatus
                     );
-
                     found = true;
                 }
-
-                // Duplicate records are ignored.
             } else {
                 updatedData.add(line);
             }
         }
 
-        if (!found) {
-            return false;
+        if (found) {
+            FileManager.writeToFile(
+                    FILE_NAME,
+                    String.join("\n", updatedData) + "\n",
+                    false
+            );
         }
 
-        String content = String.join("\n", updatedData) + "\n";
-
-        FileManager.writeToFile(FILE_NAME, content, false);
-
-        return true;
+        return found;
     }
 
     public boolean isApproved(String doctorId) {
