@@ -7,40 +7,46 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DoctorService {
-
     private static final String FILE_NAME = "data/doctors.csv";
+    private final UserService userService;
 
-    // Add a new doctor
+    public DoctorService() {
+        userService = new UserService();
+    }
+
     public boolean addDoctor(Doctor doctor) {
-
-        // Check if ID already exists
         if (findDoctorById(doctor.getId()) != null) {
             return false;
         }
 
-        String data = doctor.getId() + "," +
+        if (userService.findUserById(doctor.getId()) != null) {
+            return false;
+        }
+
+        String data =
+                doctor.getId() + "," +
                 doctor.getName() + "," +
                 doctor.getEmail() + "," +
                 doctor.getPassword() + "," +
                 doctor.getPhone() + "," +
                 doctor.getSpecialization() + "," +
-                doctor.getConsultationFee() +
-                "\n";
+                doctor.getConsultationFee() + "\n";
 
         FileManager.writeToFile(FILE_NAME, data);
+
+        if (!userService.registerUser(doctor)) {
+            deleteDoctor(doctor.getId());
+            return false;
+        }
 
         return true;
     }
 
-    // Get all doctors
     public List<Doctor> getAllDoctors() {
-
         List<Doctor> doctors = new ArrayList<>();
-
         List<String> data = FileManager.readFromFile(FILE_NAME);
 
         for (String line : data) {
-
             if (line.trim().isEmpty()) {
                 continue;
             }
@@ -51,28 +57,28 @@ public class DoctorService {
                 continue;
             }
 
-            Doctor doctor = new Doctor(
-                    parts[0],
-                    parts[1],
-                    parts[2],
-                    parts[3],
-                    parts[4],
-                    parts[5],
-                    Double.parseDouble(parts[6]));
+            try {
+                Doctor doctor = new Doctor(
+                        parts[0],
+                        parts[1],
+                        parts[2],
+                        parts[3],
+                        parts[4],
+                        parts[5],
+                        Double.parseDouble(parts[6])
+                );
 
-            doctors.add(doctor);
+                doctors.add(doctor);
+            } catch (NumberFormatException e) {
+                continue;
+            }
         }
 
         return doctors;
     }
 
-    // Find doctor by ID
     public Doctor findDoctorById(String id) {
-
-        List<Doctor> doctors = getAllDoctors();
-
-        for (Doctor doctor : doctors) {
-
+        for (Doctor doctor : getAllDoctors()) {
             if (doctor.getId().equalsIgnoreCase(id)) {
                 return doctor;
             }
@@ -81,18 +87,11 @@ public class DoctorService {
         return null;
     }
 
-    // Find doctors by specialization
     public List<Doctor> findBySpecialization(String specialization) {
-
         List<Doctor> result = new ArrayList<>();
 
-        List<Doctor> doctors = getAllDoctors();
-
-        for (Doctor doctor : doctors) {
-
-            if (doctor.getSpecialization()
-                    .equalsIgnoreCase(specialization)) {
-
+        for (Doctor doctor : getAllDoctors()) {
+            if (doctor.getSpecialization().equalsIgnoreCase(specialization)) {
                 result.add(doctor);
             }
         }
@@ -100,7 +99,6 @@ public class DoctorService {
         return result;
     }
 
-    // Update doctor information
     public boolean updateDoctor(
             String id,
             String name,
@@ -110,19 +108,15 @@ public class DoctorService {
             double consultationFee) {
 
         List<Doctor> doctors = getAllDoctors();
-
         boolean found = false;
 
         for (Doctor doctor : doctors) {
-
             if (doctor.getId().equalsIgnoreCase(id)) {
-
                 doctor.setName(name);
                 doctor.setEmail(email);
                 doctor.setPhone(phone);
                 doctor.setSpecialization(specialization);
                 doctor.setConsultationFee(consultationFee);
-
                 found = true;
                 break;
             }
@@ -134,22 +128,19 @@ public class DoctorService {
 
         saveAllDoctors(doctors);
 
+        if (!userService.updateUser(id, name, email)) {
+            return false;
+        }
+
         return true;
     }
 
-    // Delete doctor
     public boolean deleteDoctor(String id) {
-
         List<Doctor> doctors = getAllDoctors();
-
         boolean removed = false;
 
         for (int i = 0; i < doctors.size(); i++) {
-
-            if (doctors.get(i)
-                    .getId()
-                    .equalsIgnoreCase(id)) {
-
+            if (doctors.get(i).getId().equalsIgnoreCase(id)) {
                 doctors.remove(i);
                 removed = true;
                 break;
@@ -162,54 +153,24 @@ public class DoctorService {
 
         saveAllDoctors(doctors);
 
+        userService.deleteUser(id);
+
         return true;
     }
 
-    public List<Doctor> getApprovedDoctors() {
-        List<Doctor> approvedDoctors = new ArrayList<>();
-        DoctorApprovalService approvalService = new DoctorApprovalService();
-
-        for (Doctor doctor : getAllDoctors()) {
-            if (approvalService.isApproved(doctor.getId())) {
-                approvedDoctors.add(doctor);
-            }
-        }
-
-        return approvedDoctors;
-    }
-
-    // Save complete doctor list
     private void saveAllDoctors(List<Doctor> doctors) {
-
         StringBuilder data = new StringBuilder();
 
         for (Doctor doctor : doctors) {
-
-            data.append(
-                    doctor.getId()).append(",")
-                    .append(
-                            doctor.getName())
-                    .append(",")
-                    .append(
-                            doctor.getEmail())
-                    .append(",")
-                    .append(
-                            doctor.getPassword())
-                    .append(",")
-                    .append(
-                            doctor.getPhone())
-                    .append(",")
-                    .append(
-                            doctor.getSpecialization())
-                    .append(",")
-                    .append(
-                            doctor.getConsultationFee())
-                    .append("\n");
+            data.append(doctor.getId()).append(",")
+                    .append(doctor.getName()).append(",")
+                    .append(doctor.getEmail()).append(",")
+                    .append(doctor.getPassword()).append(",")
+                    .append(doctor.getPhone()).append(",")
+                    .append(doctor.getSpecialization()).append(",")
+                    .append(doctor.getConsultationFee()).append("\n");
         }
 
-        FileManager.writeToFile(
-                FILE_NAME,
-                data.toString(),
-                false);
+        FileManager.writeToFile(FILE_NAME, data.toString(), false);
     }
 }
