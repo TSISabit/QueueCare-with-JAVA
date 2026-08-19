@@ -2,6 +2,7 @@ package ui;
 
 import model.Patient;
 import service.PatientService;
+import service.UserService;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -12,9 +13,11 @@ public class PatientManagementFrame extends JFrame {
     private PatientService patientService;
     private JTable patientTable;
     private DefaultTableModel tableModel;
+    private UserService userService;
 
     public PatientManagementFrame() {
         patientService = new PatientService();
+        userService = new UserService();
 
         setTitle("QueueCare - Manage Patients");
         setSize(950, 500);
@@ -35,7 +38,7 @@ public class PatientManagementFrame extends JFrame {
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         mainPanel.add(titleLabel, BorderLayout.NORTH);
 
-        String[] columns = {"ID", "Name", "Email", "Age", "Gender", "Phone", "Address"};
+        String[] columns = { "ID", "Name", "Email", "Age", "Gender", "Phone", "Address" };
 
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
@@ -175,8 +178,7 @@ public class PatientManagementFrame extends JFrame {
                     this,
                     "Please select a patient first.",
                     "No Selection",
-                    JOptionPane.WARNING_MESSAGE
-            );
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -210,34 +212,80 @@ public class PatientManagementFrame extends JFrame {
         panel.add(new JLabel("Address:"));
         panel.add(addressField);
 
-        int result = JOptionPane.showConfirmDialog(this, panel,
-                "Update Patient", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                panel,
+                "Update Patient",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
 
         if (result != JOptionPane.OK_OPTION) {
             return;
         }
+
         try {
+            String name = nameField.getText().trim();
+            String email = emailField.getText().trim();
             int age = Integer.parseInt(ageField.getText().trim());
+            String gender = genderField.getText().trim();
+            String phone = phoneField.getText().trim();
+            String address = addressField.getText().trim();
 
-            boolean updated = patientService.updatePatient(id,
-                    nameField.getText().trim(),
-                    emailField.getText().trim(),
-                    age,
-                    genderField.getText().trim(),
-                    phoneField.getText().trim(),
-                    addressField.getText().trim()
-            );
-
-            if (updated) {
-                JOptionPane.showMessageDialog(this, "Patient updated successfully.");
-                loadPatients();
-            } else {
-                JOptionPane.showMessageDialog(this, "Patient could not be updated.",
-                        "Error", JOptionPane.ERROR_MESSAGE);
+            if (name.isEmpty() || email.isEmpty() ||
+                    gender.isEmpty() || phone.isEmpty() ||
+                    address.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please fill all fields.",
+                        "Validation Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
             }
+
+            boolean patientUpdated = patientService.updatePatient(
+                    id,
+                    name,
+                    email,
+                    age,
+                    gender,
+                    phone,
+                    address);
+
+            if (!patientUpdated) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Patient could not be updated.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            boolean userUpdated = userService.updateUser(
+                    id,
+                    name,
+                    email);
+
+            if (!userUpdated) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Patient updated, but users.csv could not be updated.",
+                        "Synchronization Warning",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Patient updated successfully.");
+
+            loadPatients();
+
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Age must be a number.",
-                    "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Age must be a number.",
+                    "Invalid Input",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -245,31 +293,55 @@ public class PatientManagementFrame extends JFrame {
         int selectedRow = patientTable.getSelectedRow();
 
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a patient first.",
-                    "No Selection", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please select a patient first.",
+                    "No Selection",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         String id = tableModel.getValueAt(selectedRow, 0).toString();
         String name = tableModel.getValueAt(selectedRow, 1).toString();
 
-        int confirmation = JOptionPane.showConfirmDialog(this, "Delete patient " + name + "?",
-                "Confirm Delete", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        int confirmation = JOptionPane.showConfirmDialog(
+                this,
+                "Delete patient " + name + "?",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
 
         if (confirmation != JOptionPane.YES_OPTION) {
             return;
         }
 
-        boolean deleted = patientService.deletePatient(id);
+        boolean patientDeleted = patientService.deletePatient(id);
 
-        if (deleted) {
-            JOptionPane.showMessageDialog(this, "Patient deleted successfully.");
-            loadPatients();
-        } 
-        else {
-            JOptionPane.showMessageDialog(this, "Patient could not be deleted.",
-                    "Error", JOptionPane.ERROR_MESSAGE);
+        if (!patientDeleted) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Patient could not be deleted.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
         }
+
+        boolean userDeleted = userService.deleteUser(id);
+
+        if (!userDeleted) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Patient deleted, but users.csv could not be updated.",
+                    "Synchronization Warning",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Patient deleted successfully.");
+
+        loadPatients();
     }
 
     private void searchPatient() {
